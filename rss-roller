@@ -84,6 +84,8 @@ while getopts ":c:l" opt; do
   esac
 done
 
+[[ -z ${CFL} ]] && makeRSS
+
 source ${rssrc}/${CFL}.rc
 
 if [[ ! -f $feedname ]]; then
