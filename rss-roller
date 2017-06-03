@@ -1,9 +1,11 @@
 #!/bin/bash
 
+readonly rssrc=${HOME}/.rss-roller
+
 header () {
 echo """<?xml version='1.0' encoding='UTF-8' ?>
 <rss version='2.0' xmlns:atom='http://www.w3.org/2005/Atom'>
-<!-- Made using rss-roller https://github.com/maxhebditch/rss-roller -->
+<!-- Made using rss-roller https://github.com/yradunchev/rss-roller -->
 """ > ~/feedtop
 echo """
 <channel>
@@ -25,7 +27,6 @@ echo "adding the footer"
 }
 
 item () {
-if [[ $mode == "a" ]]; then
         echo """<item>
         <title>$fullTitle</title>
         <link>$linkadd</link>
@@ -34,15 +35,6 @@ if [[ $mode == "a" ]]; then
         <description>$extract</description>
         </item>
         """ >> ~/feed
-elif [[ $mode == "m" ]]; then
-        echo """<item>
-        <title>$fullTitle</title>
-        <link>$linkadd</link>
-        <guid isPermaLink='false'>$guidadd</guid>
-        <description>$extract</description>
-        </item>
-        """ >> ~/feed
-fi
 }
 
 combine () {
@@ -54,34 +46,49 @@ combine () {
 }
 
 makeRSS () {
-        echo "feed does not exit already, going to make from scratch"
+        [[ -d ${rssrc} ]] || mkdir ${rssrc}
+        echo "Creating config file for a feed"
         echo """
         CONFIGURATION
         =============
         """
-        read -p "What is your website called?: (e.g Google) " title
+        read -p "Name this config file:" configfile
+        read -p "What is the website name?: (e.g Google) " title
         read -p "What is the link to the website?: (e.g http://google.com) " link
-        read -p "Give a brief description of your website: (e.g A search engine) " description
-        read -p "Give the URL to where the rss feed will live: (e.g http://google.com/rssfeed.xml) " rsslink
-        read -p "What will be the feed file live on the disk?: (e.g /home/dog/www/rssfeed.xml has to match above) " feedname
-        read -p "Where is the file path for the posts? (leave blank if you are not using auto mode): " postDir
-        echo -e "title=$title\nlink=$link\ndescription='$description'\nrsslink=$rsslink\nfeedname=$feedname\npostDir=$postDir" > ~/.rss-roller.rc
-        echo "please run rss-roller again with the --auto or --manual flags"
+        read -p "Give a brief description of the website: (e.g A search engine) " description
+        read -p "Give the URL for the rss feed: (e.g http://google.com/rssfeed.xml) " rsslink
+        read -p "The path to the feed file live on the disk?: (e.g /home/dog/www/rssfeed.xml has to match above) " feedname
+        read -p "Source directory for the feed: " postDir
+        echo -e "title=$title\nlink=$link\ndescription='$description'\nrsslink=$rsslink\nfeedname=$feedname\npostDir=$postDir">\
+          ${rssrc}$/configfile.rc
+        echo "please run rss-roller again with the -c $configfile or -l flags"
         exit
 }
-        
-if [[ ! -f ~/.rss-roller.rc ]]; then
-        makeRSS
-fi
 
-source ~/.rss-roller.rc
+[[ $# -eq 0 ]] && makeRSS
+
+while getopts ":c:l" opt; do
+  case $opt in
+    l) 
+       rcArray=( $(find ${rssrc} -type f -name "*.rc") )
+       for rcfile in "${rcArray[@]}"; do
+        basename $rcfile .rc      
+       done
+       exit
+       ;;
+    c) CFL="$OPTARG" ;;
+    \?) 
+      echo "Invalid option -$OPTARG" >&2
+      exit 2
+      ;;
+  esac
+done
+
+source ${rssrc}/${CFL}.rc
 
 if [[ ! -f $feedname ]]; then
         touch $feedname
 fi
-
-
-if [[ $1 == "--auto" ]]; then
         mode=a
         #Do the bad thing
         if [[ -f $feedname ]]; then
@@ -112,37 +119,3 @@ if [[ $1 == "--auto" ]]; then
         done
         combine
         exit
-fi
-
-if [[ $1 == "--manual" ]]; then
-        mode=m
-        echo """
-        NEW POST
-        =======
-        """
-        read -p "What is the title of the new update?: " fullTitle
-        read -p "What is the link of the new update?: " linkadd
-        read -p "Provide a description of the new update: " extract
-        read -p "Provide a unique identifier for the update: " guidadd
-        if [[ -f $feedname ]]; then
-                sed -e '1,10d' $feedname > ~/rssrollertopless
-                head -n -4 ~/rssrollertopless > ~/rssrollertopandbottomless
-                mv ~/rssrollertopandbottomless $feedname-old
-                rm ~/rssrollertopless
-                rm $feedname
-        else
-                touch $feedname
-        fi
-        item
-        if [[ -f $feedname-old ]]; then
-                mv ~/feed ~/feedtop
-                cat ~/feedtop $feedname-old > ~/feed
-                rm $feedname-old ~/feedtop
-        fi
-        combine
-        exit
-fi
-
-if [[ $# == 0 ]]; then
-        echo "please use the --auto or --manual flag"
-fi

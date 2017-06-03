@@ -1,17 +1,30 @@
 rss-roller
 ==========
 
-Shell script for generating and updating rss feeds. 
+Shell script for generating and updating rss feeds. It allows you to configure and build rss feeds for different local sources.
 
-When you first run the code it will generate a dotfile `~/.rss-roller.rc` and it will ask you some default questions for the RSS file. It is up to you how much you write in these fields but they are required to create a valid rss file. The last two questions will ask you where the RSS file should live on your disk and what the name of the rss file will be. It would be sensible to name the script with an `.xml` suffix. It will also ask where your posts live, leave this blank if do not have a dedicated folder of posts to use in auto mode.
+##Usage:
 
-It has two modes, an auto mode where it will go through the designated folder of posts and generate the information as needed using the following flag.
+Run without parameters: start in 'create feed config' mode.
+In this mode it will ask few questions and write configuration file for your feed in _.rss-roller_ directory under user home directory.
 
-        rss-roller --auto
+**rss-roller**
 
+To see what feeds are configured run with -l flag - the code will list all configuration files in _.rss-roller_ directory.
 
-There is also a manual mode which is better for single page layouts, and far more robust, which will then ask you a series of questions to generate the blog. This can be summoned using
+**rss-roller -l**
 
-        rss-roller --manual
+To build feed run with _-c feedconfigname_ where **feedconfigname** is a name of the existing feed configuration under _.rss-roller_ directory.
 
+**rss-roller -c feedconfigname**
+
+##ToDo:
+
+- Allow building feeds recursively from a source directory three
+- Validate user input in 'create feed config' mode.
+- Edit feed config mode.
+
+##Credits:
+
+Based on [Max Hebditch](http://maxhebditch.co.uk/) [rss-roller](https://github.com/maxhebditch/rss-roller) script.
 It is worthwhile checking that the rss feed created is valid using an [online tool](http://validator.w3.org/feed/) if the rss file generated doesn't work as expected.
