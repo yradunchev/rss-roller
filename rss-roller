@@ -29,7 +29,8 @@ if [[ $mode == "a" ]]; then
         echo """<item>
         <title>$fullTitle</title>
         <link>$linkadd</link>
-        <guid>$guid</guid>
+        <pubDate>$postdate</pubDate>
+        <guid>$guidadd</guid>
         <description>$extract</description>
         </item>
         """ >> ~/feed
@@ -87,19 +88,24 @@ if [[ $1 == "--auto" ]]; then
                 rm $feedname
         fi
         touch $feedname
-        postArray=( $(ls -r "$postDir"/*.html) )
-        numPosts=$(ls "$postDir"/*.html | wc -l)
+#       postArray=( $(ls -r "$postDir"/*.html) )
+        postArray=( $(find ${postDir}/201* -type f -name "*.html") )
+#       numPosts=$(ls "$postDir"/*.html | wc -l)
+        numPosts=${#postArray[@]} 
         echo "numposts is $numPosts"
         postNum=0
-        guidadd=$linkadd
         for posts in "${postArray[@]}"; do
                 let postNum+=1
                 post=$posts
                 echo "adding post $postNum/$numPosts"
                 fullTitle=$(grep -o '>.*</h1>' $post | sed 's/\(>\|<\/h1>\)//g')
-                postname=${post##*/}
-                linkadd="$website"/"$postname"
-                extract=$(sed -n '/<p>.*/,/*.<\/p>/{p;q;}' $post | sed -e 's/<[^>]\+>/ /g' -e 's|<p>||g' -e 's|</p>||g' -e 's|"||g')
+                postDirSize=${#postDir} 
+#               postname=${post##*/}
+                postname=${post:$postDirSize:200} 
+                linkadd="$link$postname"
+                guidadd=$linkadd
+                postdate=$(grep -o '>.*</small>' $post | sed 's/\(>\|<\/small>\)//g')
+#               extract=$( sed '/post-content/!d;s//&\n/;s/.*\n//;:a;/div/bb;$!{n;ba};:b;s//\n&/;P;D' $post)
                 item $post
         done
         combine
