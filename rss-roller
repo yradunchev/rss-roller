@@ -104,7 +104,7 @@ if [[ $1 == "--auto" ]]; then
                 postname=${post:$postDirSize:200} 
                 linkadd="$link$postname"
                 guidadd=$linkadd
-                postdate=$(grep -o '>.*</small>' $post | sed 's/\(>\|<\/small>\)//g')
+                postdate=$(grep -o '>.*</small>' $post | sed 's/\(>\|<\/small>\)//g' | date --rfc-822 --date -)
 #               extract=$( sed '/post-content/!d;s//&\n/;s/.*\n//;:a;/div/bb;$!{n;ba};:b;s//\n&/;P;D' $post)
                 item $post
         done
