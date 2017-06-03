@@ -23,6 +23,7 @@ To build feed run with _-c feedconfigname_ where **feedconfigname** is a name of
 - Allow building feeds recursively from a source directory three
 - Validate user input in 'create feed config' mode.
 - Edit feed config mode.
+- Clear bash source code and make it [GSSG](https://google.github.io/styleguide/shell.xml) compliant.
 
 ## Credits:
 
