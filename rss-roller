@@ -3,38 +3,38 @@
 readonly rssrc=${HOME}/.rss-roller
 
 header () {
-echo """<?xml version='1.0' encoding='UTF-8' ?>
+cat >> ~/feedtop << EOF
+<?xml version='1.0' encoding='UTF-8' ?>
 <rss version='2.0' xmlns:atom='http://www.w3.org/2005/Atom'>
 <!-- Made using rss-roller https://github.com/yradunchev/rss-roller -->
-""" > ~/feedtop
-echo """
 <channel>
 <title>$title</title>
 <link>$link</link>
 <description>$description</description>
 <atom:link href='$rsslink' rel='self' type='application/rss+xml' />
-""" >> ~/feedtop
+EOF
 echo "adding the header"
 }
 
 footer () {
-echo """
+cat >> ~/feedbottom << EOF
 </channel>
 
 </rss>
-""" >> ~/feedbottom
+EOF
 echo "adding the footer"
 }
 
 item () {
-        echo """<item>
+cat >> ~/feed << EOF
+        <item>
         <title>$fullTitle</title>
         <link>$linkadd</link>
         <pubDate>$postdate</pubDate>
         <guid>$guidadd</guid>
         <description>$extract</description>
         </item>
-        """ >> ~/feed
+EOF
 }
 
 combine () {
@@ -48,10 +48,7 @@ combine () {
 makeRSS () {
         [[ -d ${rssrc} ]] || mkdir ${rssrc}
         echo "Creating config file for a feed"
-        echo """
-        CONFIGURATION
-        =============
-        """
+        echo -e "CONFIGURATION\n============="
         read -p "Name this config file:" configfile
         read -p "What is the website name?: (e.g Google) " title
         read -p "What is the link to the website?: (e.g http://google.com) " link
