@@ -2,8 +2,8 @@
 
 readonly rssrc=$HOME/.rss-roller
 
-header () {
-cat >> ~/feedtop << EOF
+header() {
+  cat >> ~/feedtop << EOF
 <?xml version='1.0' encoding='UTF-8' ?>
 <rss version='2.0' xmlns:atom='http://www.w3.org/2005/Atom'>
 <!-- Made using rss-roller https://github.com/yradunchev/rss-roller -->
@@ -13,19 +13,19 @@ cat >> ~/feedtop << EOF
 <description>$description</description>
 <atom:link href='$rsslink' rel='self' type='application/rss+xml' />
 EOF
-echo "adding the header"
+  echo "adding the header"
 }
 
-footer () {
-cat >> ~/feedbottom << EOF
+footer() {
+  cat >> ~/feedbottom << EOF
 </channel>
 
 </rss>
 EOF
-echo "adding the footer"
+  echo "adding the footer"
 }
 
-item () {
+item() {
 cat >> ~/feed << EOF
         <item>
         <title>$fulltitle</title>
@@ -37,43 +37,45 @@ cat >> ~/feed << EOF
 EOF
 }
 
-combine () {
-        header
-        footer
-        cat ~/feedtop ~/feed > ~/feedtb
-        cat ~/feedtb ~/feedbottom > "$feedname"
-        rm ~/feedtop ~/feed ~/feedtb ~/feedbottom
+combine() {
+  header
+  footer
+  cat ~/feedtop ~/feed > ~/feedtb
+  cat ~/feedtb ~/feedbottom > "$feedname"
+  rm ~/feedtop ~/feed ~/feedtb ~/feedbottom
 }
 
-makeRSS () {
-        [[ -d "$rssrc" ]] || mkdir "$rssrc"
-        echo "Creating config file for a feed"
-        echo -e "CONFIGURATION\n============="
-        read -r -p "Name this config file:" configfile
-        read -r -p "What is the website name?: (e.g Google) " title
-        read -r -p "What is the link to the website?: (e.g http://google.com) " link
-        read -r -p "Give a brief description of the website: (e.g A search engine) " description
-        read -r -p "Give the URL for the rss feed: (e.g http://google.com/rssfeed.xml) " rsslink
-        read -r -p "The path to the feed file live on the disk?: (e.g /home/dog/www/rssfeed.xml has to match above) " feedname
-        read -r -p "Source directory for the feed: " postdir
-        echo -e "title=$title\nlink=$link\ndescription='$description'\nrsslink=$rsslink\nfeedname=$feedname\npostdir=$postdir">\
-          "$rssrc"/"$configfile".rc
-        echo "please run rss-roller again with the -c $configfile or -l flags"
-        exit
+makecfg() {
+  [[ -d "$rssrc" ]] || mkdir "$rssrc"
+  echo "Creating config file for a feed"
+  echo -e "CONFIGURATION\n============="
+  read -r -p "Name this config file:" configfile
+  read -r -p "What is the website name?: (e.g Google) " title
+  read -r -p "What is the link to the website?: (e.g http://google.com) " link
+  read -r -p "Give a brief description of the website: (e.g A search engine) " description
+  read -r -p "Give the URL for the rss feed: (e.g http://google.com/rssfeed.xml) " rsslink
+  read -r -p "The path to the feed file live on the disk?: (e.g /home/dog/www/rssfeed.xml has to match above) " feedname
+  read -r -p "Source directory for the feed: " postdir
+  echo -e "title=$title\nlink=$link\ndescription='$description'\nrsslink=$rsslink\nfeedname=$feedname\npostdir=$postdir">\
+  "$rssrc"/"$configfile".rc
+  echo "please run rss-roller again with the -c $configfile or -l flags"
+  exit
 }
 
-[[ $# -eq 0 ]] && makeRSS
+listcfg () {
+  rcarray=( $(find "$rssrc" -type f -name "*.rc") )
+  for rcfile in "${rcarray[@]}"; do
+    basename "$rcfile" .rc      
+  done
+  exit
+}
+
+[[ $# -eq 0 ]] && listcfg
 
 while getopts ":c:l" opt; do
   case $opt in
-    l) 
-       rcarray=( $(find "$rssrc" -type f -name "*.rc") )
-       for rcfile in "${rcarray[@]}"; do
-        basename "$rcfile" .rc      
-       done
-       exit
-       ;;
-    c) cfl="$OPTARG" ;;
+    l) listcfg ;;
+    c) cfg="$OPTARG" ;;
     \?) 
       echo "Invalid option -$OPTARG" >&2
       exit 2
@@ -81,34 +83,27 @@ while getopts ":c:l" opt; do
   esac
 done
 
-[[ -z $cfl ]] && makeRSS
+[[ -z $cfg ]] && makecfg
 
 # shellcheck source=/dev/null
-source "$rssrc"/"$cfl".rc
+source "$rssrc"/"$cfg".rc
 
-if [[ ! -f $feedname ]]; then
-        touch "$feedname"
-fi
-        #Do the bad thing
-        [[ -f $feedname ]] && rm "$feedname"
-        touch "$feedname"
-        postarray=( $(find "$postdir"/201* -type f -name "*.html") )
-        numposts=${#postarray[@]} 
-        echo "numposts is $numposts"
-        postnum=0
-        for posts in "${postarray[@]}"; do
-                let postnum+=1
-                post=$posts
-                echo "adding post $postnum/$numposts"
-                fulltitle=$(grep -o '>.*</h1>' "$post" | sed 's/\(>\|<\/h1>\)//g')
-                postdirsize=${#postdir} 
-                postname=${post:$postdirsize:200} 
-                linkadd="$link$postname"
-                guidadd=$linkadd
-                postdate=$(date --rfc-822 --date \
-                  "$(grep -o '>.*</small>' "$post" |  sed 's/\(>\|<\/small>\)//g')"\
-                  )
-                item "$post"
-        done
-        combine
-        exit
+[[ -f $feedname ]] && mv "$feedname" "$feedname".bak
+postarray=( $(find "$postdir"/201* -type f -name "*.html") )
+numposts=${#postarray[@]} 
+echo "numposts is $numposts"
+postnum=0
+for posts in "${postarray[@]}"; do
+  let postnum+=1
+  post=$posts
+  echo "adding post $postnum/$numposts"
+  fulltitle=$(grep -o '>.*</h1>' "$post" | sed 's/\(>\|<\/h1>\)//g')
+  postdirsize=${#postdir} 
+  postname=${post:$postdirsize:200} 
+  linkadd="$link$postname"
+  guidadd=$linkadd
+  postdate=$(date --rfc-822 --date "$(grep -o '>.*</small>' "$post" |  sed 's/\(>\|<\/small>\)//g')")
+  item "$post"
+done
+combine
+exit
