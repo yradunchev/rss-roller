@@ -1,13 +1,13 @@
 rss-roller
 ==========
 
-Shell script for generating and updating rss feeds. It allows you to configure and build rss feeds
+Shell script for generating and updating [YFM](http://blog.radunchev.com) rss feeds. It allows you to configure and build rss feeds
 for different local sources.
 
 ## Usage:
 
-Run without parameters: start in 'create feed config' mode.  In this mode it will ask few questions
-and write configuration file for your feed in _.rss-roller_ directory under user home directory.
+Run without parameters: list available source configs.  
+In this mode it will ask few questions and write configuration file for your feed in _.rss-roller_ directory under user home directory.
 
 **rss-roller**
 
@@ -21,13 +21,15 @@ configuration under _.rss-roller_ directory.
 
 **rss-roller -c feedconfigname**
 
+To create new source config for rss-roller run with _-c_ wihtout _feedconfigname_   
+In this mode it will ask few questions and write configuration file for your feed in _.rss-roller_ directory under user home directory.   
+
+**rss-roller -c**
+
 ## ToDo:
 
-- Allow building feeds recursively from a source directory three
 - Validate user input in 'create feed config' mode.
 - Edit feed config mode.
-- Clear bash source code and make it [GSSG](https://google.github.io/styleguide/shell.xml)
-  compliant.
 
 ## Credits:
 
