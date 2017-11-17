@@ -6,8 +6,7 @@ for different local sources.
 
 ## Usage:
 
-Run without parameters: list available source configs.  
-In this mode it will ask few questions and write configuration file for your feed in _.rss-roller_ directory under user home directory.
+Run without parameters: list available source configs.    
 
 **rss-roller**
 
